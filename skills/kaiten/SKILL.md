@@ -143,6 +143,28 @@ kaiten-mini api PUT /cards/<ID>/files --attach ./file.pdf  # прикрепит�
 авто-приводятся к int/bool; тело — JSON-строка или `@file.json`. Список эндпоинтов
 и поля тел смотри в доке: https://developers.kaiten.ru/
 
+## Документация Kaiten (не только API)
+
+Вопросы «как настроить» (интеграции, импорт из GitLab/Jira/Trello, автоматизации,
+роли, тарифы) — это не API, а пользовательская документация. Где искать:
+
+1. **База знаний** https://faq-ru.kaiten.site — 860+ статей. Страниц много, но
+   у sitemap'а человекочитаемые URL — ищи нужную статью grep'ом по slug'у, затем
+   скачивай страницу (контент читается голым `curl`, JS не нужен):
+   ```bash
+   curl -s https://faq-ru.kaiten.site/sitemap.xml | grep -oiE 'https://[^<]*(gitlab|import|integrac)[^<]*'
+   curl -s https://faq-ru.kaiten.site/nastroyka-integraciy | sed 's/<[^>]*>/ /g' | tr -s ' \n' ' \n'
+   ```
+   Типовые разделы: `/integracii`, `/nastroyka-integraciy`, `/avtomatizaciya-zadach-2`,
+   `/prava-dostupa`, `/doski-2`. Импорт: есть статьи про GitLab-дополнение
+   (включая self-managed), импорт из Trello/Asana/YouGile/Jira.
+2. **API-референс** — уже встроен в CLI: `kaiten-mini docs list/search/get`
+   (работает офлайн). Живой источник: https://developers.kaiten.ru — там есть
+   настоящий `/llms.txt` (весь референс одним markdown'ом, ~1.8 МБ; лучше
+   пользоваться `kaiten-mini docs`, он компактнее).
+3. help.kaiten.ru — портал поддержки (YouTrack), требует логина; его
+   `/llms.txt` — фальшивый (отдаёт SPA), не трать на него время.
+
 ## Осторожно
 
 Пишущие команды (`cards create/update/move`, `comments add`, `time-logs add`,
