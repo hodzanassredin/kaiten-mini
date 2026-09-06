@@ -187,6 +187,10 @@ def cmd_api(client: KaitenClient, args: argparse.Namespace) -> Any:
             raise ValueError(f"--body must be JSON or @file: {e}") from e
     if method == "GET":
         return client.get(path, params=params or None)
+    if args.attach:
+        if method not in ("POST", "PUT", "PATCH"):
+            raise ValueError("--attach works with POST/PUT/PATCH")
+        return client.upload(method, path, args.attach)
     if method in ("POST", "PATCH", "PUT"):
         if body is None:
             raise ValueError(f"{method} requires --body")
@@ -280,6 +284,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("path", help="API path relative to /api/latest, e.g. /cards/123 or cards")
     p.add_argument("--param", action="append", default=[], help="Query param key=value (repeatable; values auto-typed to int/bool)")
     p.add_argument("--body", help="JSON body or @file.json (required for POST/PATCH/PUT)")
+    p.add_argument("--attach", help="Upload a file as multipart field 'file' (POST/PUT/PATCH), e.g. api PUT /cards/ID/files --attach ./doc.pdf")
 
     spaces = groups.add_parser("spaces", help="Spaces").add_subparsers(dest="action", required=True, metavar="ACTION")
     leaf(spaces, "list", cmd_spaces_list, "List spaces")

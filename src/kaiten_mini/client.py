@@ -115,6 +115,10 @@ class KaitenClient:
     def put(self, path: str, body: dict) -> Any:
         return self._request("PUT", path, json=body)
 
+    def upload(self, method: str, path: str, file_path: str, field: str = "file") -> Any:
+        with open(file_path, "rb") as f:
+            return self._request(method, path, files={field: (os.path.basename(file_path), f)})
+
     def delete(self, path: str) -> Any:
         return self._request("DELETE", path)
 

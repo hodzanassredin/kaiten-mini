@@ -87,6 +87,7 @@ kaiten-mini api GET /boards/<ID>/lanes --param limit=10
 kaiten-mini api GET /card-types --fields id,name
 kaiten-mini api POST /cards --body '{"title": "...", "board_id": 123}'
 kaiten-mini api PATCH /cards/<ID> --body '{"column_id": 777}'
+kaiten-mini api PUT /cards/<ID>/files --attach ./file.pdf  # прикрепить файл (multipart)
 ```
 
 Путь — относительно `/api/latest`; `--param key=value` повторяемый, значения

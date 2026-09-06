@@ -101,6 +101,7 @@ kaiten-mini docs get "/cards/{card_id}/time-logs"   # схема запроса 
 # универсальный вызов любого эндпоинта (без отдельной команды)
 kaiten-mini api GET /boards/ID/lanes --param limit=10
 kaiten-mini api POST /cards --body '{"title": "...", "board_id": 123}'
+kaiten-mini api PUT /cards/ID/files --attach ./doc.pdf   # multipart-загрузка файла
 
 kaiten-mini cards list [--board ID] [--space ID] [--query TEXT] [--owner UID] [--responsible UID] [--member UID] [--state 1,2] [--limit N] [--offset N]
 kaiten-mini cards get ID                    # числовой ID или ключ вида PROJ-123
