@@ -129,7 +129,17 @@ class KaitenClient:
         return urlunsplit((parsed.scheme, parsed.netloc, "", "", ""))
 
     def find_space_id(self, board_id: int) -> int | None:
-        """Locate the space owning a board (boards don't carry space_id back)."""
+        """Locate the space owning a board (board payloads don't carry space_id back).
+
+        Cheap path: the card *list* endpoint returns ``path_data.space`` — one
+        request with ``limit=1``. Fallback: walk spaces and their boards, for
+        servers where ``path_data`` is absent.
+        """
+        cards = self.get("/cards", {"board_id": board_id, "limit": 1}) or []
+        if cards:
+            space = (cards[0].get("path_data") or {}).get("space") or {}
+            if space.get("id") is not None:
+                return space["id"]
         for space in self.get("/spaces") or []:
             boards = self.get(f"/spaces/{space['id']}/boards") or []
             if any(b.get("id") == board_id for b in boards):
