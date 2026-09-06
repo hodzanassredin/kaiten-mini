@@ -63,6 +63,20 @@ kaiten-mini time-logs add --card <CARD_ID> --minutes 90 [--for-date DATE] [--com
 Отчёт по времени за период: глобального эндпоинта нет — собирай по карточкам:
 `cards list --board ... --fields id,title` → для каждой `time-logs list --card ...`.
 
+## Метаданные API (референс встроен в CLI)
+
+Kaiten не отдаёт OpenAPI, но `kaiten-mini docs` вытаскивает весь референс
+с developers.kaiten.ru (62 сущности, схемы запросов и примеры ответов).
+Не гадай по эндпоинтам и полям — сначала посмотри в метаданные:
+
+```bash
+kaiten-mini docs list [filter]                 # сущности и операции (метод + путь)
+kaiten-mini docs search "time"                 # поиск по имени операции/пути
+kaiten-mini docs get "/cards/{card_id}/time-logs"  # request-схема и поля ответа
+```
+
+Полный объект операции тяжёлый — комбинируй с `--fields`/`--compact`.
+
 ## Универсальный вызов (любой эндпоинт)
 
 Если под задачу нет готовой команды — не останавливайся: `kaiten-mini api` ходит

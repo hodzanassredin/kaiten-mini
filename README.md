@@ -93,6 +93,11 @@ kaiten-mini columns list --board ID
 kaiten-mini users list [--query TEXT] [--include-inactive]
 kaiten-mini users get UID
 
+# метаданные API: референс с developers.kaiten.ru (auth не нужен)
+kaiten-mini docs list [FILTER]      # сущности и операции (метод + путь)
+kaiten-mini docs search "time"      # поиск операций по имени/пути
+kaiten-mini docs get "/cards/{card_id}/time-logs"   # схема запроса и примеры ответа
+
 # универсальный вызов любого эндпоинта (без отдельной команды)
 kaiten-mini api GET /boards/ID/lanes --param limit=10
 kaiten-mini api POST /cards --body '{"title": "...", "board_id": 123}'

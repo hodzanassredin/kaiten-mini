@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from typing import Any
 
 import httpx
@@ -170,6 +171,7 @@ def _parse_param(raw: str) -> tuple[str, Any]:
 
 def cmd_api(client: KaitenClient, args: argparse.Namespace) -> Any:
     """Raw escape hatch: any endpoint, no dedicated command needed."""
+    """Raw escape hatch: any endpoint, no dedicated command needed."""
     method = args.method.upper()
     path = args.path if args.path.startswith("/") else "/" + args.path
     params = dict(_parse_param(p) for p in args.param)
@@ -192,6 +194,43 @@ def cmd_api(client: KaitenClient, args: argparse.Namespace) -> Any:
     if method == "DELETE":
         return client.delete(path)
     raise ValueError(f"unsupported method {method!r}: use GET/POST/PATCH/PUT/DELETE")
+
+
+# --- docs: API reference scraped from developers.kaiten.ru (no Kaiten auth needed) ---
+
+
+def cmd_docs_list(args: argparse.Namespace) -> Any:
+    from kaiten_mini.docs import load_entities
+
+    entities = load_entities(refresh=args.refresh)
+    out = []
+    for e in entities:
+        ops = [
+            {"method": op.get("type"), "path": op.get("path"), "name": op.get("name")}
+            for op in e.get("operations", [])
+            if op.get("type") and op.get("path")
+        ]
+        if not ops:
+            continue
+        if args.filter and args.filter.lower() not in (e.get("name") or "").lower():
+            continue
+        out.append({"entity": e.get("name"), "beta": e.get("isBeta", False), "operations": ops})
+    return out
+
+
+def cmd_docs_search(args: argparse.Namespace) -> Any:
+    from kaiten_mini.docs import load_entities, search_operations
+
+    return search_operations(load_entities(refresh=args.refresh), args.query)
+
+
+def cmd_docs_get(args: argparse.Namespace) -> Any:
+    from kaiten_mini.docs import load_entities, operation_details
+
+    hits = operation_details(load_entities(refresh=args.refresh), args.query)
+    if not hits:
+        raise ValueError(f"no operations matching {args.query!r}; try: kaiten-mini docs list")
+    return hits if len(hits) > 1 else hits[0]
 
 
 # --- parser ---
@@ -219,6 +258,22 @@ def build_parser() -> argparse.ArgumentParser:
         return p
 
     leaf(groups, "whoami", cmd_whoami, "Current user (auth check)")
+
+    docs = groups.add_parser(
+        "docs", help="API reference scraped from developers.kaiten.ru (no auth needed)"
+    ).add_subparsers(dest="action", required=True, metavar="ACTION")
+
+    p = leaf(docs, "list", cmd_docs_list, "List documented entities and their operations")
+    p.add_argument("filter", nargs="?", help="Substring filter on entity names (e.g. 'card')")
+    p.add_argument("--refresh", action="store_true", help="Re-download the docs bundle")
+
+    p = leaf(docs, "search", cmd_docs_search, "Search operations by entity/operation name or path")
+    p.add_argument("query", help="Substring query, e.g. 'time' or '/cards'")
+    p.add_argument("--refresh", action="store_true", help="Re-download the docs bundle")
+
+    p = leaf(docs, "get", cmd_docs_get, "Full operation details: request schema, response examples")
+    p.add_argument("query", help="Substring query (entity, operation name or path)")
+    p.add_argument("--refresh", action="store_true", help="Re-download the docs bundle")
 
     p = leaf(groups, "api", cmd_api, "Raw call to any API endpoint (escape hatch)")
     p.add_argument("method", help="HTTP method: GET/POST/PATCH/PUT/DELETE")
@@ -322,21 +377,38 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
+    if getattr(args.func, "needs_client", True):
+        try:
+            client = make_client(args)
+        except ValueError as e:
+            fail(str(e))
+        try:
+            result = args.func(client, args)
+        except KaitenApiError as e:
+            fail(e.message, status=e.status_code)
+        except httpx.HTTPError as e:
+            fail(f"network error: {e}")
+        except ValueError as e:
+            fail(str(e))
+        finally:
+            client.close()
+    else:
+        try:
+            result = args.func(args)
+        except httpx.HTTPError as e:
+            fail(f"network error: {e}")
+        except ValueError as e:
+            fail(str(e))
     try:
-        client = make_client(args)
-    except ValueError as e:
-        fail(str(e))
-    try:
-        result = args.func(client, args)
-    except KaitenApiError as e:
-        fail(e.message, status=e.status_code)
-    except httpx.HTTPError as e:
-        fail(f"network error: {e}")
-    except ValueError as e:
-        fail(str(e))
-    finally:
-        client.close()
-    print_json(result, fields=args.fields, compact=args.compact)
+        print_json(result, fields=args.fields, compact=args.compact)
+    except BrokenPipeError:
+        # downstream pipe closed (e.g. `| head`) — exit quietly instead of a traceback
+        sys.stdout = open(os.devnull, "w")
+        sys.exit(0)
+
+
+for _f in (cmd_docs_list, cmd_docs_search, cmd_docs_get):
+    _f.needs_client = False
 
 
 if __name__ == "__main__":
