@@ -7,6 +7,28 @@ stdout, ошибки — JSON на stderr с exit code 1, самодокумен
 Замена тяжёлым MCP-серверам: вместо сотен tool-схем в контексте агента — один скилл
 с кулинарной книгой команд, который подгружается только когда Kaiten реально нужен.
 
+## Быстрый старт: просто установите скилл агенту
+
+Достаточно одной команды — дальше **агент сам** проведёт вас по настройке:
+доустановит CLI, подскажет, где взять токен и куда его записать:
+
+```bash
+npx skills add hodzanassredin/kaiten-mini --skill kaiten -g -y
+```
+
+Это ставит скилл `kaiten` (кулинарную книгу команд) сразу в Claude Code, Kimi Code
+CLI, Cursor, Codex и ещё ~70 агентов через [skills CLI](https://github.com/vercel-labs/skills)
+(нужен Node.js). Скилл ленивый: в контекст агента он подгружается только когда
+Kaiten реально нужен. Для конкретного агента: добавьте `-a claude-code` (и т.п.).
+
+Вручную, без Node.js:
+
+```bash
+mkdir -p ~/.agents/skills/kaiten
+curl -sL https://raw.githubusercontent.com/hodzanassredin/kaiten-mini/main/skills/kaiten/SKILL.md \
+  -o ~/.agents/skills/kaiten/SKILL.md
+```
+
 ## Альтернатива и чем мы отличаемся
 
 Полнофункциональный вариант — [ViktorOgnev/kaiten-cli](https://github.com/ViktorOgnev/kaiten-cli)
@@ -44,31 +66,6 @@ uv tool install .
 ```
 
 Требуется Python >= 3.11. Единственная зависимость — `httpx[socks]`.
-
-## Установка скилла для AI-агента
-
-В репо лежит скилл `skills/kaiten/SKILL.md` — кулинарная книга команд для агента
-(лениво подгружается в контекст только когда Kaiten реально нужен).
-
-Через [skills CLI](https://github.com/vercel-labs/skills) (нужен Node.js; ставит в
-Claude Code, Kimi Code CLI, Cursor, Codex и ещё ~70 агентов):
-
-```bash
-# глобально (~/.agents/skills/kaiten для Kimi Code CLI и др.)
-npx skills add hodzanassredin/kaiten-mini --skill kaiten-mini -g -y
-
-# или в конкретный агент
-npx skills add hodzanassredin/kaiten-mini --skill kaiten-mini -g -a claude-code
-```
-
-Или вручную:
-
-```bash
-mkdir -p ~/.agents/skills/kaiten
-curl -sL https://raw.githubusercontent.com/hodzanassredin/kaiten-mini/main/skills/kaiten/SKILL.md \
-  -o ~/.agents/skills/kaiten/SKILL.md
-```
-
 
 ## Настройка
 
