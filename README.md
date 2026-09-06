@@ -110,6 +110,9 @@ kaiten-mini cards create --board ID --title "..." [--column ID] [--description "
 kaiten-mini cards update ID [--title ...] [--description ...] [--due DATE] [--archive]
 kaiten-mini cards move ID --column ID [--lane ID] [--board ID]
 
+kaiten-mini files list --card ID             # вложения карточки (id, name, size, url)
+kaiten-mini files download --card ID --file FILE_ID [-o PATH]
+
 kaiten-mini comments list CARD_ID
 kaiten-mini comments add CARD_ID --text "..."
 

@@ -21,7 +21,7 @@ description: Работа с Kaiten (карточки, доски, коммен�
 Справка полная — сначала смотри её, а не гадай по флагам:
 `kaiten-mini --help` → `kaiten-mini <group> --help` → `kaiten-mini <group> <action> --help`.
 
-Группы: `spaces`, `boards`, `columns`, `users`, `cards`, `comments`, `time-logs`, `whoami`.
+Группы: `spaces`, `boards`, `columns`, `users`, `cards`, `files`, `comments`, `time-logs`, `whoami`.
 
 Разрешить id пользователя в имя: `kaiten-mini users get <UID> --fields full_name,username`
 или списком: `kaiten-mini users list --fields id,full_name,username --compact`.
@@ -54,6 +54,16 @@ kaiten-mini cards move <CARD_ID> --column <COLUMN_ID>
 kaiten-mini cards create --board <BOARD_ID> --title "Заголовок" \
   [--column ID] [--description "..."] [--due 2026-09-30] [--asap]
 ```
+
+Вложения (картинки, документы):
+```bash
+kaiten-mini files list --card <CARD_ID> --fields id,name,size,url --compact
+kaiten-mini files download --card <CARD_ID> --file <FILE_ID> [-o ./file.png]
+kaiten-mini api PUT /cards/<CARD_ID>/files --attach ./file.pdf   # загрузка
+```
+`url` вложения на files.kaiten.ru открывается без токена (ссылка с UUID) — её можно
+отдавать пользователю как есть. Картинки в описании/комментариях вставлены markdown'ом
+на те же files.kaiten.ru-ссылки.
 
 Тайм-логи:
 ```bash

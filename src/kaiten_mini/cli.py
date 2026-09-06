@@ -146,6 +146,24 @@ def cmd_cards_move(client: KaitenClient, args: argparse.Namespace) -> Any:
     return client.patch(f"/cards/{args.card_id}", body)
 
 
+def cmd_files_list(client: KaitenClient, args: argparse.Namespace) -> Any:
+    return client.get(f"/cards/{args.card}/files")
+
+
+def cmd_files_download(client: KaitenClient, args: argparse.Namespace) -> Any:
+    files = client.get(f"/cards/{args.card}/files") or []
+    file_obj = next((f for f in files if str(f.get("id")) == str(args.file)), None)
+    if file_obj is None:
+        raise ValueError(f"file {args.file} not found on card {args.card}; see: files list --card {args.card}")
+    url = file_obj.get("url")
+    if not url:
+        raise ValueError(f"file {args.file} has no download url (external={file_obj.get('external')})")
+    dest = args.output or file_obj["name"]
+    result = client.download(url, dest)
+    result.update({"file_id": file_obj["id"], "name": file_obj["name"], "url": url})
+    return result
+
+
 def cmd_comments_list(client: KaitenClient, args: argparse.Namespace) -> Any:
     return client.get(f"/cards/{args.card_id}/comments")
 
@@ -371,6 +389,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--column", type=int, required=True, help="Target column ID (see: columns list)")
     p.add_argument("--lane", type=int, help="Target lane ID")
     p.add_argument("--board", type=int, help="Target board ID (when moving across boards)")
+
+    files = groups.add_parser("files", help="Card attachments").add_subparsers(dest="action", required=True, metavar="ACTION")
+
+    p = leaf(files, "list", cmd_files_list, "List attachments of a card")
+    p.add_argument("--card", type=int, required=True, help="Card ID")
+
+    p = leaf(files, "download", cmd_files_download, "Download an attachment to disk")
+    p.add_argument("--card", type=int, required=True, help="Card ID")
+    p.add_argument("--file", required=True, help="File ID (see: files list --card ID)")
+    p.add_argument("-o", "--output", help="Destination path (default: original file name)")
 
     comments = groups.add_parser("comments", help="Card comments").add_subparsers(dest="action", required=True, metavar="ACTION")
 

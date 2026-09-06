@@ -119,6 +119,16 @@ class KaitenClient:
         with open(file_path, "rb") as f:
             return self._request(method, path, files={field: (os.path.basename(file_path), f)})
 
+    def download(self, url: str, dest_path: str) -> dict[str, Any]:
+        """Stream a file to disk. ``url`` may be absolute (files.kaiten.ru)."""
+        with self._http.stream("GET", url) as resp:
+            if resp.status_code >= 400:
+                raise KaitenApiError(resp.status_code, resp.reason_phrase)
+            with open(dest_path, "wb") as f:
+                for chunk in resp.iter_bytes():
+                    f.write(chunk)
+        return {"path": dest_path, "size": os.path.getsize(dest_path)}
+
     def delete(self, path: str) -> Any:
         return self._request("DELETE", path)
 
