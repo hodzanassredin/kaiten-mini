@@ -20,7 +20,32 @@ uv tool install git+https://github.com/hodzanassredin/kaiten-cli
 uv tool install .
 ```
 
-Требуется Python >= 3.11. Единственная зависимость — `httpx`.
+Требуется Python >= 3.11. Единственная зависимость — `httpx[socks]`.
+
+## Установка скилла для AI-агента
+
+В репо лежит скилл `skills/kaiten/SKILL.md` — кулинарная книга команд для агента
+(лениво подгружается в контекст только когда Kaiten реально нужен).
+
+Через [skills CLI](https://github.com/vercel-labs/skills) (нужен Node.js; ставит в
+Claude Code, Kimi Code CLI, Cursor, Codex и ещё ~70 агентов):
+
+```bash
+# глобально (~/.agents/skills/kaiten для Kimi Code CLI и др.)
+npx skills add hodzanassredin/kaiten-cli --skill kaiten -g -y
+
+# или в конкретный агент
+npx skills add hodzanassredin/kaiten-cli --skill kaiten -g -a claude-code
+```
+
+Или вручную:
+
+```bash
+mkdir -p ~/.agents/skills/kaiten
+curl -sL https://raw.githubusercontent.com/hodzanassredin/kaiten-cli/main/skills/kaiten/SKILL.md \
+  -o ~/.agents/skills/kaiten/SKILL.md
+```
+
 
 ## Настройка
 
