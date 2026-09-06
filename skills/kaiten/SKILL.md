@@ -64,6 +64,19 @@ kaiten-mini time-logs add --card <CARD_ID> --minutes 90 [--for-date DATE] [--com
 Отчёт по времени за период: глобального эндпоинта нет — собирай по карточкам:
 `cards list --board ... --fields id,title` → для каждой `time-logs list --card ...`.
 
+## Модель данных: дерево и path_data
+
+Иерархия: пространство (space) → доска (board) → колонка → карточка. Ссылки «вверх»
+API не отдаёт: у карточки есть только `board_id`, у доски нет `space_id`, глобального
+списка досок нет. Как находить нужное:
+
+- Ссылка на карточку в UI: `kaiten-mini cards url <CARD_ID>` — команда сама резолвит
+  пространство (через `path_data` списка карточек, с фолбэком на обход дерева).
+- Пространство/колонка/линия карточки вручную: поле `path_data` есть в ответе
+  **списка** `api GET /cards --param board_id=<ID>` (в одиночном `cards get` его нет).
+- Обход дерева вручную: `spaces list` → `boards list --space ID` →
+  `cards list --board ID`.
+
 ## Метаданные API (референс встроен в CLI)
 
 Kaiten не отдаёт OpenAPI, но `kaiten-mini docs` вытаскивает весь референс
