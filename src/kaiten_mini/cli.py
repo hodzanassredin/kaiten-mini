@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from typing import Any
 
@@ -153,6 +154,46 @@ def cmd_time_logs_add(client: KaitenClient, args: argparse.Namespace) -> Any:
     return client.post(f"/cards/{args.card}/time-logs", body)
 
 
+def _parse_param(raw: str) -> tuple[str, Any]:
+    if "=" not in raw:
+        raise ValueError(f"--param expects key=value, got: {raw!r}")
+    key, value = raw.split("=", 1)
+    if not key:
+        raise ValueError(f"--param expects key=value, got: {raw!r}")
+    if value.lower() in ("true", "false"):
+        return key, value.lower() == "true"
+    try:
+        return key, int(value)
+    except ValueError:
+        return key, value
+
+
+def cmd_api(client: KaitenClient, args: argparse.Namespace) -> Any:
+    """Raw escape hatch: any endpoint, no dedicated command needed."""
+    method = args.method.upper()
+    path = args.path if args.path.startswith("/") else "/" + args.path
+    params = dict(_parse_param(p) for p in args.param)
+    body = None
+    if args.body is not None:
+        raw = args.body
+        if raw.startswith("@"):
+            with open(raw[1:], encoding="utf-8") as f:
+                raw = f.read()
+        try:
+            body = json.loads(raw)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"--body must be JSON or @file: {e}") from e
+    if method == "GET":
+        return client.get(path, params=params or None)
+    if method in ("POST", "PATCH", "PUT"):
+        if body is None:
+            raise ValueError(f"{method} requires --body")
+        return {"POST": client.post, "PATCH": client.patch, "PUT": client.put}[method](path, body)
+    if method == "DELETE":
+        return client.delete(path)
+    raise ValueError(f"unsupported method {method!r}: use GET/POST/PATCH/PUT/DELETE")
+
+
 # --- parser ---
 
 
@@ -178,6 +219,12 @@ def build_parser() -> argparse.ArgumentParser:
         return p
 
     leaf(groups, "whoami", cmd_whoami, "Current user (auth check)")
+
+    p = leaf(groups, "api", cmd_api, "Raw call to any API endpoint (escape hatch)")
+    p.add_argument("method", help="HTTP method: GET/POST/PATCH/PUT/DELETE")
+    p.add_argument("path", help="API path relative to /api/latest, e.g. /cards/123 or cards")
+    p.add_argument("--param", action="append", default=[], help="Query param key=value (repeatable; values auto-typed to int/bool)")
+    p.add_argument("--body", help="JSON body or @file.json (required for POST/PATCH/PUT)")
 
     spaces = groups.add_parser("spaces", help="Spaces").add_subparsers(dest="action", required=True, metavar="ACTION")
     leaf(spaces, "list", cmd_spaces_list, "List spaces")

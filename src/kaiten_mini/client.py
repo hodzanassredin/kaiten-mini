@@ -112,6 +112,9 @@ class KaitenClient:
     def patch(self, path: str, body: dict) -> Any:
         return self._request("PATCH", path, json=body)
 
+    def put(self, path: str, body: dict) -> Any:
+        return self._request("PUT", path, json=body)
+
     def delete(self, path: str) -> Any:
         return self._request("DELETE", path)
 
