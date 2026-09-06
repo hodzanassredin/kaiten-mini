@@ -21,7 +21,10 @@ description: Работа с Kaiten (карточки, доски, коммен�
 Справка полная — сначала смотри её, а не гадай по флагам:
 `kaiten-mini --help` → `kaiten-mini <group> --help` → `kaiten-mini <group> <action> --help`.
 
-Группы: `spaces`, `boards`, `columns`, `cards`, `comments`, `time-logs`, `whoami`.
+Группы: `spaces`, `boards`, `columns`, `users`, `cards`, `comments`, `time-logs`, `whoami`.
+
+Разрешить id пользователя в имя: `kaiten-mini users get <UID> --fields full_name,username`
+или списком: `kaiten-mini users list --fields id,full_name,username --compact`.
 
 ## Правила экономии контекста
 

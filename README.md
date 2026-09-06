@@ -90,6 +90,9 @@ kaiten-mini spaces list
 kaiten-mini boards list --space ID
 kaiten-mini columns list --board ID
 
+kaiten-mini users list [--query TEXT] [--include-inactive]
+kaiten-mini users get UID
+
 kaiten-mini cards list [--board ID] [--space ID] [--query TEXT] [--owner UID] [--responsible UID] [--member UID] [--state 1,2] [--limit N] [--offset N]
 kaiten-mini cards get ID                    # числовой ID или ключ вида PROJ-123
 kaiten-mini cards create --board ID --title "..." [--column ID] [--description "..."] [--due DATE] [--asap]

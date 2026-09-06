@@ -48,6 +48,17 @@ def cmd_columns_list(client: KaitenClient, args: argparse.Namespace) -> Any:
     return client.get(f"/boards/{args.board}/columns")
 
 
+def cmd_users_list(client: KaitenClient, args: argparse.Namespace) -> Any:
+    params = {"query": args.query, "limit": args.limit, "offset": args.offset}
+    if args.include_inactive:
+        params["include_inactive"] = "true"
+    return client.get("/users", params=params)
+
+
+def cmd_users_get(client: KaitenClient, args: argparse.Namespace) -> Any:
+    return client.get(f"/users/{args.user_id}")
+
+
 def cmd_cards_list(client: KaitenClient, args: argparse.Namespace) -> Any:
     params = {
         "board_id": args.board,
@@ -178,6 +189,17 @@ def build_parser() -> argparse.ArgumentParser:
     columns = groups.add_parser("columns", help="Board columns").add_subparsers(dest="action", required=True, metavar="ACTION")
     p = leaf(columns, "list", cmd_columns_list, "List columns of a board")
     p.add_argument("--board", type=int, required=True, help="Board ID")
+
+    users = groups.add_parser("users", help="Company users").add_subparsers(dest="action", required=True, metavar="ACTION")
+
+    p = leaf(users, "list", cmd_users_list, "List/search company users")
+    p.add_argument("--query", help="Search by name or email")
+    p.add_argument("--include-inactive", action="store_true", help="Include deactivated users")
+    p.add_argument("--limit", type=int, default=50, help="Max results (default 50)")
+    p.add_argument("--offset", type=int, help="Pagination offset")
+
+    p = leaf(users, "get", cmd_users_get, "Get a user by ID")
+    p.add_argument("user_id", type=int, help="User ID")
 
     cards = groups.add_parser("cards", help="Cards").add_subparsers(dest="action", required=True, metavar="ACTION")
 
