@@ -16,6 +16,22 @@ description: Работа с Kaiten (карточки, доски, коммен�
   найдена — установи: `uv tool install git+https://github.com/hodzanassredin/kaiten-mini`
   (или `uvx --from git+https://github.com/hodzanassredin/kaiten-mini kaiten-mini ...` разово).
 
+### Если токена нет
+
+Не останавливайся и не гадай — проведи пользователя за руку:
+
+1. Скажи: токен получается на https://developers.kaiten.ru/ (инструкция со скриншотами:
+   профиль в Kaiten → «API и вебхуки» → создать токен).
+2. Предложи открыть страницу сам: `xdg-open https://developers.kaiten.ru/`
+   (macOS: `open`, Windows: `start`).
+3. `KAITEN_SUBDOMAIN` — это поддомен компании из адресной строки:
+   `https://<поддомен>.kaiten.ru`. Если пользователь залогинен в Kaiten в браузере,
+   поддомен виден в URL любой открытой доски.
+4. Когда пользователь пришлёт токен — проверь пару сразу:
+   `KAITEN_SUBDOMAIN=... KAITEN_TOKEN=... kaiten-mini whoami --compact`.
+5. Чтобы не спрашивать токен каждый раз, предложи сохранить: либо `export` в
+   `~/.bashrc`/`~/.zshrc`, либо в `.env` текущего проекта (не коммитить!).
+
 ## Самообслуживание
 
 Справка полная — сначала смотри её, а не гадай по флагам:
