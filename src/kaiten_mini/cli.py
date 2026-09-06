@@ -81,6 +81,21 @@ def cmd_cards_get(client: KaitenClient, args: argparse.Namespace) -> Any:
     return client.get(f"/cards/{args.card_id}")
 
 
+def cmd_cards_url(client: KaitenClient, args: argparse.Namespace) -> Any:
+    card = client.get(f"/cards/{args.card_id}")
+    board_id = card["board_id"]
+    space_id = client.find_space_id(board_id)
+    if space_id is None:
+        raise ValueError(f"no space found for board {board_id}")
+    path = f"/space/{space_id}/boards/card/{card['id']}"
+    return {
+        "card_id": card["id"],
+        "board_id": board_id,
+        "space_id": space_id,
+        "url": client.web_origin + path,
+    }
+
+
 def cmd_cards_create(client: KaitenClient, args: argparse.Namespace) -> Any:
     body: dict[str, Any] = {"title": args.title, "board_id": args.board}
     for key, attr in (
@@ -323,6 +338,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--offset", type=int, help="Pagination offset")
 
     p = leaf(cards, "get", cmd_cards_get, "Get a card by ID or key (e.g. PROJ-123)")
+    p.add_argument("card_id", help="Card ID or key")
+
+    p = leaf(cards, "url", cmd_cards_url, "Web URL of a card (clickable link to the UI)")
     p.add_argument("card_id", help="Card ID or key")
 
     p = leaf(cards, "create", cmd_cards_create, "Create a card")

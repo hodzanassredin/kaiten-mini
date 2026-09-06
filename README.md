@@ -105,6 +105,7 @@ kaiten-mini api PUT /cards/ID/files --attach ./doc.pdf   # multipart-загру�
 
 kaiten-mini cards list [--board ID] [--space ID] [--query TEXT] [--owner UID] [--responsible UID] [--member UID] [--state 1,2] [--limit N] [--offset N]
 kaiten-mini cards get ID                    # числовой ID или ключ вида PROJ-123
+kaiten-mini cards url ID                     # кликабельная ссылка на карточку в веб-интерфейсе
 kaiten-mini cards create --board ID --title "..." [--column ID] [--description "..."] [--due DATE] [--asap]
 kaiten-mini cards update ID [--title ...] [--description ...] [--due DATE] [--archive]
 kaiten-mini cards move ID --column ID [--lane ID] [--board ID]

@@ -122,5 +122,19 @@ class KaitenClient:
     def delete(self, path: str) -> Any:
         return self._request("DELETE", path)
 
+    @property
+    def web_origin(self) -> str:
+        """``https://host`` of the web UI (the API base URL minus ``/api/...``)."""
+        parsed = urlsplit(str(self._http.base_url))
+        return urlunsplit((parsed.scheme, parsed.netloc, "", "", ""))
+
+    def find_space_id(self, board_id: int) -> int | None:
+        """Locate the space owning a board (boards don't carry space_id back)."""
+        for space in self.get("/spaces") or []:
+            boards = self.get(f"/spaces/{space['id']}/boards") or []
+            if any(b.get("id") == board_id for b in boards):
+                return space["id"]
+        return None
+
     def close(self) -> None:
         self._http.close()

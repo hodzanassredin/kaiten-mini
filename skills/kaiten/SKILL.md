@@ -43,6 +43,7 @@ kaiten-mini spaces list --fields id,title --compact
 kaiten-mini boards list --space <SPACE_ID> --fields id,title --compact
 kaiten-mini cards list --board <BOARD_ID> --query "текст" --fields id,title --compact
 kaiten-mini cards get <CARD_ID>
+kaiten-mini cards url <CARD_ID> --fields url --compact   # ссылка на карточку в UI — отдавать её в ответе
 kaiten-mini comments add <CARD_ID> --text "комментарий (markdown)"
 kaiten-mini columns list --board <BOARD_ID> --fields id,title --compact
 kaiten-mini cards move <CARD_ID> --column <COLUMN_ID>
