@@ -14,6 +14,33 @@ from kaiten_mini.client import DEFAULT_BASE_DOMAIN, KaitenApiError, KaitenClient
 from kaiten_mini.output import fail, print_json
 
 
+def _load_dotenv() -> None:
+    """Fill missing KAITEN_* vars from .env files (never overrides real env).
+
+    Lets the token live in a file the *user* writes, so it never has to appear
+    in a chat message or a command line (both end up in agent context/logs).
+    """
+    candidates = [
+        os.path.join(os.getcwd(), ".env"),
+        os.path.expanduser("~/.config/kaiten-mini/.env"),
+    ]
+    for path in candidates:
+        try:
+            with open(path, encoding="utf-8") as f:
+                lines = f.readlines()
+        except OSError:
+            continue
+        for line in lines:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip().strip("'\"")
+            if key and not os.environ.get(key):
+                os.environ[key] = value
+
+
 def _env(name: str) -> str | None:
     value = os.environ.get(name, "").strip()
     return value or None
@@ -22,7 +49,7 @@ def _env(name: str) -> str | None:
 def make_client(args: argparse.Namespace) -> KaitenClient:
     token = args.token or _env("KAITEN_TOKEN")
     if not token:
-        raise ValueError("Kaiten token is not configured: pass --token or set KAITEN_TOKEN")
+        raise ValueError("Kaiten token is not configured: set KAITEN_TOKEN in the environment or in ./.env (~/.config/kaiten-mini/.env also works)")
     base_url = build_base_url(
         subdomain=args.subdomain or _env("KAITEN_SUBDOMAIN") or _env("KAITEN_DOMAIN"),
         base_domain=args.base_domain or _env("KAITEN_BASE_DOMAIN") or DEFAULT_BASE_DOMAIN,
@@ -427,6 +454,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    _load_dotenv()
     args = build_parser().parse_args(argv)
     if getattr(args.func, "needs_client", True):
         try:

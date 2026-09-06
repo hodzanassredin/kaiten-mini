@@ -81,6 +81,10 @@ curl -sL https://raw.githubusercontent.com/hodzanassredin/kaiten-mini/main/skill
 
 Всё это можно передать и флагами: `--subdomain`, `--token`, `--base-url`, `--base-domain`.
 
+CLI также подхватывает `./.env` и `~/.config/kaiten-mini/.env` (не переопределяет
+уже установленные переменные). Это предпочтительный способ для токена: файл пишет
+человек, и токен не светится ни в истории shell, ни в контексте AI-агента.
+
 ## Команды
 
 ```
