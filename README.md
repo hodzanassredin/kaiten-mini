@@ -93,6 +93,10 @@ kaiten-mini columns list --board ID
 kaiten-mini users list [--query TEXT] [--include-inactive]
 kaiten-mini users get UID
 
+# универсальный вызов любого эндпоинта (без отдельной команды)
+kaiten-mini api GET /boards/ID/lanes --param limit=10
+kaiten-mini api POST /cards --body '{"title": "...", "board_id": 123}'
+
 kaiten-mini cards list [--board ID] [--space ID] [--query TEXT] [--owner UID] [--responsible UID] [--member UID] [--state 1,2] [--limit N] [--offset N]
 kaiten-mini cards get ID                    # числовой ID или ключ вида PROJ-123
 kaiten-mini cards create --board ID --title "..." [--column ID] [--description "..."] [--due DATE] [--asap]

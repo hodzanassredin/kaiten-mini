@@ -63,6 +63,22 @@ kaiten-mini time-logs add --card <CARD_ID> --minutes 90 [--for-date DATE] [--com
 Отчёт по времени за период: глобального эндпоинта нет — собирай по карточкам:
 `cards list --board ... --fields id,title` → для каждой `time-logs list --card ...`.
 
+## Универсальный вызов (любой эндпоинт)
+
+Если под задачу нет готовой команды — не останавливайся: `kaiten-mini api` ходит
+в любой эндпоинт API напрямую:
+
+```bash
+kaiten-mini api GET /boards/<ID>/lanes --param limit=10
+kaiten-mini api GET /card-types --fields id,name
+kaiten-mini api POST /cards --body '{"title": "...", "board_id": 123}'
+kaiten-mini api PATCH /cards/<ID> --body '{"column_id": 777}'
+```
+
+Путь — относительно `/api/latest`; `--param key=value` повторяемый, значения
+авто-приводятся к int/bool; тело — JSON-строка или `@file.json`. Список эндпоинтов
+и поля тел смотри в доке: https://developers.kaiten.ru/
+
 ## Осторожно
 
 Пишущие команды (`cards create/update/move`, `comments add`, `time-logs add`,
