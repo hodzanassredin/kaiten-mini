@@ -18,8 +18,9 @@ from typing import Any
 import httpx
 
 from kaiten_mini.client import _proxy_from_env
+from kaiten_mini.output import warn
 
-DOCS_HOME = "https://developers.kaiten.ru/"
+DOCS_HOME = os.environ.get("KAITEN_MINI_DOCS_URL", "https://developers.kaiten.ru/")
 CACHE_TTL = 24 * 3600
 
 _APP_CHUNK_RE = re.compile(r"/_next/static/chunks/pages/_app-[^\"']+\.js")
@@ -77,13 +78,20 @@ def _cache_path() -> Path:
     return base / "kaiten-mini" / "docs.json"
 
 
-def load_entities(*, refresh: bool = False) -> list[dict[str, Any]]:
-    cache = _cache_path()
-    if not refresh and cache.exists() and time.time() - cache.stat().st_mtime < CACHE_TTL:
-        try:
-            return json.loads(cache.read_text(encoding="utf-8"))["entities"]
-        except (json.JSONDecodeError, KeyError):
-            pass
+def _bundled_cache_path() -> Path:
+    # snapshot committed to the repo: last-known-good reference for the day the
+    # docs site changes its bundle format and extraction breaks
+    return Path(__file__).parent / "docs_cache.json"
+
+
+def _read_cache(path: Path) -> list[dict[str, Any]] | None:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))["entities"]
+    except (OSError, json.JSONDecodeError, KeyError):
+        return None
+
+
+def _fetch_entities() -> tuple[list[dict[str, Any]], str]:
     with httpx.Client(timeout=60.0, proxy=_proxy_from_env(), follow_redirects=True) as http:
         html = http.get(DOCS_HOME).text
         match = _APP_CHUNK_RE.search(html)
@@ -93,8 +101,30 @@ def load_entities(*, refresh: bool = False) -> list[dict[str, Any]]:
     entities = _extract_entities(js)
     if not entities:
         raise ValueError("docs site layout changed: no embedded entities found in " + match.group(0))
+    return entities, match.group(0)
+
+
+def load_entities(*, refresh: bool = False) -> list[dict[str, Any]]:
+    cache = _cache_path()
+    if not refresh and cache.exists() and time.time() - cache.stat().st_mtime < CACHE_TTL:
+        cached = _read_cache(cache)
+        if cached is not None:
+            return cached
+    try:
+        entities, source = _fetch_entities()
+    except Exception as e:
+        # fall back to whatever metadata we have rather than failing outright
+        stale = _read_cache(cache)
+        if stale is not None:
+            warn(f"docs fetch failed ({e}); using the local cache from {cache} — metadata may be stale")
+            return stale
+        bundled = _read_cache(_bundled_cache_path())
+        if bundled is not None:
+            warn(f"docs fetch failed ({e}); using the cache bundled with kaiten-mini — metadata may be stale")
+            return bundled
+        raise
     cache.parent.mkdir(parents=True, exist_ok=True)
-    cache.write_text(json.dumps({"source": match.group(0), "entities": entities}, ensure_ascii=False), encoding="utf-8")
+    cache.write_text(json.dumps({"source": source, "entities": entities}, ensure_ascii=False), encoding="utf-8")
     return entities
 
 

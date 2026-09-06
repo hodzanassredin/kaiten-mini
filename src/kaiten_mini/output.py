@@ -38,3 +38,8 @@ def fail(message: str, *, status: int | None = None) -> None:
         payload = {"error": message, "status": status}
     print(json.dumps(payload, ensure_ascii=False), file=sys.stderr)
     sys.exit(1)
+
+
+def warn(message: str) -> None:
+    """Non-fatal notice on stderr; stdout stays clean JSON."""
+    print(json.dumps({"warning": message}, ensure_ascii=False), file=sys.stderr)
