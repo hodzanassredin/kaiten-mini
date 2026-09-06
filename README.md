@@ -52,7 +52,7 @@ curl -sL https://raw.githubusercontent.com/hodzanassredin/kaiten-cli/main/skills
 | Переменная | Описание |
 |---|---|
 | `KAITEN_SUBDOMAIN` | Поддомен компании (`yourcompany` для `yourcompany.kaiten.ru`) |
-| `KAITEN_TOKEN` | API-токен (Kaiten → Профиль → API-ключи) |
+| `KAITEN_TOKEN` | API-токен — получить: [developers.kaiten.ru](https://developers.kaiten.ru/) (Kaiten → Профиль → API-ключи) |
 | `KAITEN_BASE_URL` | Полный override хоста API для нестандартных стендов |
 | `KAITEN_BASE_DOMAIN` | Базовый домен, по умолчанию `kaiten.ru` |
 
