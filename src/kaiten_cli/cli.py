@@ -54,6 +54,10 @@ def cmd_cards_list(client: KaitenClient, args: argparse.Namespace) -> Any:
         "space_id": args.space,
         "column_id": args.column,
         "query": args.query,
+        "owner_id": args.owner,
+        "responsible_id": args.responsible,
+        "member_ids": args.member,
+        "states": args.state,
         "limit": args.limit,
         "offset": args.offset,
     }
@@ -182,6 +186,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--space", type=int, help="Space ID")
     p.add_argument("--column", type=int, help="Column ID")
     p.add_argument("--query", help="Full-text search")
+    p.add_argument("--owner", type=int, help="Owner user ID (see: whoami)")
+    p.add_argument("--responsible", type=int, help="Responsible user ID")
+    p.add_argument("--member", help="Member user ID (cards where user is a member)")
+    p.add_argument("--state", help="Comma-separated states: 1=queued,2=inProgress,3=done")
     p.add_argument("--limit", type=int, default=30, help="Max results (default 30, max 100)")
     p.add_argument("--offset", type=int, help="Pagination offset")
 

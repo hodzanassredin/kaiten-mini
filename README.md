@@ -67,7 +67,7 @@ kaiten spaces list
 kaiten boards list --space ID
 kaiten columns list --board ID
 
-kaiten cards list [--board ID] [--space ID] [--query TEXT] [--limit N] [--offset N]
+kaiten cards list [--board ID] [--space ID] [--query TEXT] [--owner UID] [--responsible UID] [--member UID] [--state 1,2] [--limit N] [--offset N]
 kaiten cards get ID                    # числовой ID или ключ вида PROJ-123
 kaiten cards create --board ID --title "..." [--column ID] [--description "..."] [--due DATE] [--asap]
 kaiten cards update ID [--title ...] [--description ...] [--due DATE] [--archive]
