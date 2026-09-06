@@ -11,10 +11,10 @@ stdout, ошибки — JSON на stderr с exit code 1, самодокумен
 
 ```bash
 # разово, без установки
-uvx --from git+https://github.com/<YOU>/kaiten-cli kaiten whoami
+uvx --from git+https://github.com/hodzanassredin/kaiten-cli kaiten whoami
 
 # как инструмент
-uv tool install git+https://github.com/<YOU>/kaiten-cli
+uv tool install git+https://github.com/hodzanassredin/kaiten-cli
 
 # из исходников
 uv tool install .
