@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "kaiten-cli"
+name = "kaiten-mini"
 version = "0.1.0"
 description = "Small CLI for the Kaiten REST API (cards, comments, time logs) — agent-friendly JSON output"
 readme = "README.md"
@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-kaiten = "kaiten_cli.cli:main"
+kaiten-mini = "kaiten_mini.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/kaiten_cli"]
+packages = ["src/kaiten_mini"]

@@ -8,8 +8,8 @@ from typing import Any
 
 import httpx
 
-from kaiten_cli.client import DEFAULT_BASE_DOMAIN, KaitenApiError, KaitenClient, build_base_url
-from kaiten_cli.output import fail, print_json
+from kaiten_mini.client import DEFAULT_BASE_DOMAIN, KaitenApiError, KaitenClient, build_base_url
+from kaiten_mini.output import fail, print_json
 
 
 def _env(name: str) -> str | None:
@@ -155,7 +155,7 @@ def build_parser() -> argparse.ArgumentParser:
     common.add_argument("--compact", action="store_true", help="Single-line JSON output")
 
     parser = argparse.ArgumentParser(
-        prog="kaiten",
+        prog="kaiten-mini",
         description="Small CLI over the Kaiten REST API. Output is always JSON on stdout; "
         "errors are JSON on stderr with exit code 1.",
     )

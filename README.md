@@ -1,4 +1,4 @@
-# kaiten-cli
+# kaiten-mini
 
 Маленький CLI поверх [Kaiten](https://kaiten.ru) REST API: карточки, комментарии,
 тайм-логи. Задуман как инструмент для AI-агентов и скриптов: **вывод всегда JSON** на
@@ -34,10 +34,10 @@ ViktorOgnev/kaiten-cli. Нужен маленький предсказуемый
 
 ```bash
 # разово, без установки
-uvx --from git+https://github.com/hodzanassredin/kaiten-cli kaiten whoami
+uvx --from git+https://github.com/hodzanassredin/kaiten-mini kaiten-mini whoami
 
 # как инструмент
-uv tool install git+https://github.com/hodzanassredin/kaiten-cli
+uv tool install git+https://github.com/hodzanassredin/kaiten-mini
 
 # из исходников
 uv tool install .
@@ -55,17 +55,17 @@ Claude Code, Kimi Code CLI, Cursor, Codex и ещё ~70 агентов):
 
 ```bash
 # глобально (~/.agents/skills/kaiten для Kimi Code CLI и др.)
-npx skills add hodzanassredin/kaiten-cli --skill kaiten -g -y
+npx skills add hodzanassredin/kaiten-mini --skill kaiten-mini -g -y
 
 # или в конкретный агент
-npx skills add hodzanassredin/kaiten-cli --skill kaiten -g -a claude-code
+npx skills add hodzanassredin/kaiten-mini --skill kaiten-mini -g -a claude-code
 ```
 
 Или вручную:
 
 ```bash
 mkdir -p ~/.agents/skills/kaiten
-curl -sL https://raw.githubusercontent.com/hodzanassredin/kaiten-cli/main/skills/kaiten/SKILL.md \
+curl -sL https://raw.githubusercontent.com/hodzanassredin/kaiten-mini/main/skills/kaiten/SKILL.md \
   -o ~/.agents/skills/kaiten/SKILL.md
 ```
 
@@ -77,33 +77,33 @@ curl -sL https://raw.githubusercontent.com/hodzanassredin/kaiten-cli/main/skills
 | `KAITEN_SUBDOMAIN` | Поддомен компании (`yourcompany` для `yourcompany.kaiten.ru`) |
 | `KAITEN_TOKEN` | API-токен — получить: [developers.kaiten.ru](https://developers.kaiten.ru/) (Kaiten → Профиль → API-ключи) |
 | `KAITEN_BASE_URL` | Полный override хоста API для нестандартных стендов |
-| `KAITEN_BASE_DOMAIN` | Базовый домен, по умолчанию `kaiten.ru` |
+| `KAITEN_BASE_DOMAIN` | Базовый домен, по умолчанию `kaiten-mini.ru` |
 
 Всё это можно передать и флагами: `--subdomain`, `--token`, `--base-url`, `--base-domain`.
 
 ## Команды
 
 ```
-kaiten whoami                          # проверка auth: текущий пользователь
+kaiten-mini whoami                          # проверка auth: текущий пользователь
 
-kaiten spaces list
-kaiten boards list --space ID
-kaiten columns list --board ID
+kaiten-mini spaces list
+kaiten-mini boards list --space ID
+kaiten-mini columns list --board ID
 
-kaiten cards list [--board ID] [--space ID] [--query TEXT] [--owner UID] [--responsible UID] [--member UID] [--state 1,2] [--limit N] [--offset N]
-kaiten cards get ID                    # числовой ID или ключ вида PROJ-123
-kaiten cards create --board ID --title "..." [--column ID] [--description "..."] [--due DATE] [--asap]
-kaiten cards update ID [--title ...] [--description ...] [--due DATE] [--archive]
-kaiten cards move ID --column ID [--lane ID] [--board ID]
+kaiten-mini cards list [--board ID] [--space ID] [--query TEXT] [--owner UID] [--responsible UID] [--member UID] [--state 1,2] [--limit N] [--offset N]
+kaiten-mini cards get ID                    # числовой ID или ключ вида PROJ-123
+kaiten-mini cards create --board ID --title "..." [--column ID] [--description "..."] [--due DATE] [--asap]
+kaiten-mini cards update ID [--title ...] [--description ...] [--due DATE] [--archive]
+kaiten-mini cards move ID --column ID [--lane ID] [--board ID]
 
-kaiten comments list CARD_ID
-kaiten comments add CARD_ID --text "..."
+kaiten-mini comments list CARD_ID
+kaiten-mini comments add CARD_ID --text "..."
 
-kaiten time-logs list --card ID [--for-date YYYY-MM-DD] [--personal]
-kaiten time-logs add --card ID --minutes N [--for-date DATE] [--comment "..."]
+kaiten-mini time-logs list --card ID [--for-date YYYY-MM-DD] [--personal]
+kaiten-mini time-logs add --card ID --minutes N [--for-date DATE] [--comment "..."]
 ```
 
-Полная справка: `kaiten --help`, `kaiten <group> --help`, `kaiten <group> <action> --help`.
+Полная справка: `kaiten-mini --help`, `kaiten-mini <group> --help`, `kaiten-mini <group> <action> --help`.
 
 ## Глобальные флаги вывода
 
@@ -116,17 +116,17 @@ kaiten time-logs add --card ID --minutes N [--for-date DATE] [--comment "..."]
 
 ```bash
 # найти карточку по тексту и прочитать
-kaiten cards list --board 42 --query "оплата" --fields id,title
-kaiten cards get 12345
+kaiten-mini cards list --board 42 --query "оплата" --fields id,title
+kaiten-mini cards get 12345
 
 # прокомментировать и передвинуть в другую колонку
-kaiten comments add 12345 --text "Готово, смотрите PR"
-kaiten columns list --board 42 --fields id,title
-kaiten cards move 12345 --column 777
+kaiten-mini comments add 12345 --text "Готово, смотрите PR"
+kaiten-mini columns list --board 42 --fields id,title
+kaiten-mini cards move 12345 --column 777
 
 # тайм-логи
-kaiten time-logs list --card 12345 --for-date 2026-09-01
-kaiten time-logs add --card 12345 --minutes 90 --comment "ревью"
+kaiten-mini time-logs list --card 12345 --for-date 2026-09-01
+kaiten-mini time-logs add --card 12345 --minutes 90 --comment "ревью"
 ```
 
 ## Ограничения
