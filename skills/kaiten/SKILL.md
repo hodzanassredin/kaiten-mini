@@ -165,6 +165,13 @@ kaiten-mini api PUT /cards/<ID>/files --attach ./file.pdf  # прикрепит�
 3. help.kaiten.ru — портал поддержки (YouTrack), требует логина; его
    `/llms.txt` — фальшивый (отдаёт SPA), не трать на него время.
 
+Вебхуки — два разных механизма, не путай: **входящие** (external webhooks —
+внешняя система создаёт/обновляет карточки в Kaiten; настройка в UI:
+faq-ru.kaiten.site/webhooks) и **исходящие** (подписка на события Kaiten, POST
+на твой сервер: developers.kaiten.ru/webhooks). Схемы событий (`card:add`,
+`comment:update`, …) встроенные `kaiten-mini docs` не показывают — это не
+REST-операции; смотри developers.kaiten.ru/external-webhooks.
+
 ## Осторожно
 
 Пишущие команды (`cards create/update/move`, `comments add`, `time-logs add`,
