@@ -264,20 +264,24 @@ def cmd_api(client: KaitenClient, args: argparse.Namespace) -> Any:
 
 
 def cmd_docs_list(args: argparse.Namespace) -> Any:
-    from kaiten_mini.docs import load_entities
+    from kaiten_mini.docs import is_event_entity, load_entities
 
     entities = load_entities(refresh=args.refresh)
     out = []
     for e in entities:
-        ops = [
-            {"method": op.get("type"), "path": op.get("path"), "name": op.get("name")}
-            for op in e.get("operations", [])
-            if op.get("type") and op.get("path")
-        ]
+        ops = []
+        for op in e.get("operations", []):
+            if op.get("type") and op.get("path"):
+                ops.append({"method": op["type"], "path": op["path"], "name": op.get("name")})
+            elif op.get("name"):
+                # webhook event (no method/path): card:add, comment:update, …
+                ops.append({"method": "EVENT", "path": None, "name": op["name"]})
         if not ops:
             continue
-        if args.filter and args.filter.lower() not in (e.get("name") or "").lower():
-            continue
+        if args.filter:
+            f = args.filter.lower()
+            if f not in (e.get("name") or "").lower() and not (is_event_entity(e) and f in "webhook"):
+                continue
         out.append({"entity": e.get("name"), "beta": e.get("isBeta", False), "operations": ops})
     return out
 
@@ -295,6 +299,27 @@ def cmd_docs_get(args: argparse.Namespace) -> Any:
     if not hits:
         raise ValueError(f"no operations matching {args.query!r}; try: kaiten-mini docs list")
     return hits if len(hits) > 1 else hits[0]
+
+
+# --- kb: user knowledge base at faq-ru.kaiten.site (no Kaiten auth needed) ---
+
+
+def cmd_kb_search(args: argparse.Namespace) -> Any:
+    from kaiten_mini.kb import search_articles
+
+    return search_articles(args.query, refresh=args.refresh)
+
+
+def cmd_kb_get(args: argparse.Namespace) -> Any:
+    from kaiten_mini.kb import get_article
+
+    article = get_article(args.slug)
+    if args.output:
+        with open(args.output, "w", encoding="utf-8") as f:
+            f.write(f"{article['title']}\n{article['url']}\n\n{article['text']}\n")
+        return {"slug": article["slug"], "url": article["url"], "title": article["title"],
+                "path": args.output, "chars": len(article["text"])}
+    return article
 
 
 # --- parser ---
@@ -338,6 +363,18 @@ def build_parser() -> argparse.ArgumentParser:
     p = leaf(docs, "get", cmd_docs_get, "Full operation details: request schema, response examples")
     p.add_argument("query", help="Substring query (entity, operation name or path)")
     p.add_argument("--refresh", action="store_true", help="Re-download the docs bundle")
+
+    kb = groups.add_parser(
+        "kb", help="User knowledge base at faq-ru.kaiten.site (no auth needed)"
+    ).add_subparsers(dest="action", required=True, metavar="ACTION")
+
+    p = leaf(kb, "search", cmd_kb_search, "Search KB articles by URL slug (transliterated Russian)")
+    p.add_argument("query", help="Substring of the slug, e.g. 'gitlab', 'webhook', 'import'")
+    p.add_argument("--refresh", action="store_true", help="Re-download the KB sitemap")
+
+    p = leaf(kb, "get", cmd_kb_get, "Fetch a KB article as plain text")
+    p.add_argument("slug", help="Article slug from kb search, e.g. 'nastroyka-integraciy'")
+    p.add_argument("-o", "--output", help="Save the article to a file instead of printing it")
 
     p = leaf(groups, "api", cmd_api, "Raw call to any API endpoint (escape hatch)")
     p.add_argument("method", help="HTTP method: GET/POST/PATCH/PUT/DELETE")
@@ -486,7 +523,7 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(0)
 
 
-for _f in (cmd_docs_list, cmd_docs_search, cmd_docs_get):
+for _f in (cmd_docs_list, cmd_docs_search, cmd_docs_get, cmd_kb_search, cmd_kb_get):
     _f.needs_client = False
 
 

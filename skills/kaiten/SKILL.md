@@ -148,29 +148,28 @@ kaiten-mini api PUT /cards/<ID>/files --attach ./file.pdf  # прикрепит�
 Вопросы «как настроить» (интеграции, импорт из GitLab/Jira/Trello, автоматизации,
 роли, тарифы) — это не API, а пользовательская документация. Где искать:
 
-1. **База знаний** https://faq-ru.kaiten.site — 860+ статей. Страниц много, но
-   у sitemap'а человекочитаемые URL — ищи нужную статью grep'ом по slug'у, затем
-   скачивай страницу (контент читается голым `curl`, JS не нужен):
+1. **База знаний** https://faq-ru.kaiten.site — 860+ статей, встроена в CLI:
    ```bash
-   curl -s https://faq-ru.kaiten.site/sitemap.xml | grep -oiE 'https://[^<]*(gitlab|import|integrac)[^<]*'
-   curl -s https://faq-ru.kaiten.site/nastroyka-integraciy | sed 's/<[^>]*>/ /g' | tr -s ' \n' ' \n'
+   kaiten-mini kb search gitlab                  # статьи по подстроке slug'а (транслит: import, integrac, webhook)
+   kaiten-mini kb get nastroyka-integraciy       # статья текстом
+   kaiten-mini kb get <slug> -o article.md       # сохранить в файл (для длинных статей)
    ```
-   Типовые разделы: `/integracii`, `/nastroyka-integraciy`, `/avtomatizaciya-zadach-2`,
-   `/prava-dostupa`, `/doski-2`. Импорт: есть статьи про GitLab-дополнение
-   (включая self-managed), импорт из Trello/Asana/YouGile/Jira.
+   Типовые темы: интеграции (GitLab включая self-managed, GitHub, Slack, Пачка),
+   импорт из Trello/Asana/YouGile/Jira, автоматизации, права доступа.
 2. **API-референс** — уже встроен в CLI: `kaiten-mini docs list/search/get`
-   (работает офлайн). Живой источник: https://developers.kaiten.ru — там есть
-   настоящий `/llms.txt` (весь референс одним markdown'ом, ~1.8 МБ; лучше
-   пользоваться `kaiten-mini docs`, он компактнее).
+   (работает офлайн). Webhook-события помечены `EVENT` и находятся запросом
+   "webhook" (`docs search webhook`, `docs get "card:add"`). Живой источник:
+   https://developers.kaiten.ru — там есть настоящий `/llms.txt` (весь референс
+   одним markdown'ом, ~1.8 МБ; лучше пользоваться `kaiten-mini docs`, он компактнее).
 3. help.kaiten.ru — портал поддержки (YouTrack), требует логина; его
    `/llms.txt` — фальшивый (отдаёт SPA), не трать на него время.
 
 Вебхуки — два разных механизма, не путай: **входящие** (external webhooks —
 внешняя система создаёт/обновляет карточки в Kaiten; настройка в UI:
 faq-ru.kaiten.site/webhooks) и **исходящие** (подписка на события Kaiten, POST
-на твой сервер: developers.kaiten.ru/webhooks). Схемы событий (`card:add`,
-`comment:update`, …) встроенные `kaiten-mini docs` не показывают — это не
-REST-операции; смотри developers.kaiten.ru/external-webhooks.
+на твой сервер: developers.kaiten.ru/webhooks). Каталог событий (`card:add`,
+`comment:update`, …) доступен офлайн: `kaiten-mini docs search webhook`,
+подробно — developers.kaiten.ru/external-webhooks.
 
 ## Осторожно
 

@@ -133,27 +133,48 @@ def _matches(text: str, query: str) -> bool:
 
 
 def _is_rest_op(op: dict[str, Any]) -> bool:
-    # webhook event docs also ship as "operations" but carry no method/path
     return bool(op.get("type") and op.get("path"))
 
 
+def _is_event_op(op: dict[str, Any]) -> bool:
+    # webhook event docs ship as "operations" too, but carry no method/path —
+    # just the event name ("card:add") and a description (PROV: developers.kaiten.ru
+    # bundle, checked 2026-09-06)
+    return not _is_rest_op(op) and bool(op.get("name"))
+
+
+def is_event_entity(entity: dict[str, Any]) -> bool:
+    """Entity whose operations are all webhook events (no REST method/path).
+
+    The bundle names these like plain domain objects ("Card", "Comment") with no
+    "webhook" marker, so we recognize them by shape — this lets a "webhook"
+    query match them.
+    """
+    ops = entity.get("operations") or []
+    return bool(ops) and all(_is_event_op(op) for op in ops)
+
+
 def search_operations(entities: list[dict[str, Any]], query: str) -> list[dict[str, Any]]:
-    """REST operations whose entity name, operation name or path contains the query."""
+    """Operations whose entity name, operation name or path contains the query.
+
+    Includes webhook events, labeled ``method == "EVENT"`` (no ``path``);
+    event-only entities also match the query "webhook".
+    """
     hits = []
     for entity in entities:
+        entity_matches = _matches(entity.get("name", ""), query) or (
+            is_event_entity(entity) and _matches("webhook", query)
+        )
         for op in entity.get("operations", []):
-            if not _is_rest_op(op):
+            is_rest = _is_rest_op(op)
+            if not is_rest and not _is_event_op(op):
                 continue
-            if (
-                _matches(entity.get("name", ""), query)
-                or _matches(op.get("name", ""), query)
-                or _matches(op.get("path", ""), query)
-            ):
+            if entity_matches or _matches(op.get("name", ""), query) or _matches(op.get("path", ""), query):
                 hits.append(
                     {
                         "entity": entity.get("name"),
                         "operation": op.get("name"),
-                        "method": op.get("type"),
+                        "method": op.get("type") if is_rest else "EVENT",
                         "path": op.get("path"),
                         "beta": entity.get("isBeta", False),
                     }
@@ -162,16 +183,18 @@ def search_operations(entities: list[dict[str, Any]], query: str) -> list[dict[s
 
 
 def operation_details(entities: list[dict[str, Any]], query: str) -> list[dict[str, Any]]:
-    """Full REST operation objects (request schema, response examples) matching the query."""
+    """Full operation objects (request schema, response examples) matching the query.
+
+    Webhook events match too — they carry only name/description, no schemas.
+    """
     hits = []
     for entity in entities:
+        entity_matches = _matches(entity.get("name", ""), query) or (
+            is_event_entity(entity) and _matches("webhook", query)
+        )
         for op in entity.get("operations", []):
-            if not _is_rest_op(op):
+            if not _is_rest_op(op) and not _is_event_op(op):
                 continue
-            if (
-                _matches(entity.get("name", ""), query)
-                or _matches(op.get("name", ""), query)
-                or _matches(op.get("path", ""), query)
-            ):
+            if entity_matches or _matches(op.get("name", ""), query) or _matches(op.get("path", ""), query):
                 hits.append({"entity": entity.get("name"), **op})
     return hits
